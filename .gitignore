@@ -1,0 +1,11 @@
+node_modules/
+dist/
+.angular/
+.tools/
+.data/
+.logs/
+.env
+**/.env
+!**/.env.example
+!server/.env
+*.log

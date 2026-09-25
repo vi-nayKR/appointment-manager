@@ -1,0 +1,57 @@
+<dialog
+  #dialog
+  class="feedback-dialog"
+  [class.confirm-dialog]="mode === 'confirm'"
+  [attr.role]="mode === 'confirm' ? 'alertdialog' : 'dialog'"
+  aria-modal="true"
+  aria-labelledby="feedback-title"
+  aria-describedby="feedback-message"
+  (cancel)="dismiss($event)"
+  (click)="backdropClick($event)"
+>
+  <div class="feedback-content">
+    <span
+      class="feedback-icon"
+      [class.warning-icon]="mode === 'confirm'"
+      [class.success-icon]="mode === 'success'"
+      aria-hidden="true"
+    >
+      @if (mode === 'confirm') {
+        <svg viewBox="0 0 24 24" fill="none">
+          <path
+            d="M4 7h16M10 11v6m4-6v6M6 7l1 13h10l1-13M9 7V4h6v3"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+      } @else {
+        <svg viewBox="0 0 24 24" fill="none">
+          <path
+            d="m5 12.5 4.5 4.5L19 7"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+      }
+    </span>
+    <h2 id="feedback-title">{{ title }}</h2>
+    <p id="feedback-message">{{ message }}</p>
+    <footer class="feedback-actions">
+      @if (mode === 'confirm') {
+        <button class="cancel-button" type="button" (click)="dismiss()">Cancel</button>
+      }
+      <button
+        class="confirm-button"
+        [class.danger-button]="mode === 'confirm'"
+        type="button"
+        (click)="confirmed.emit()"
+      >
+        {{ confirmLabel }}
+      </button>
+    </footer>
+  </div>
+</dialog>

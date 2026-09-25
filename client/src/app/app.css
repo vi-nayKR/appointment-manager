@@ -1,0 +1,44 @@
+.brand-header {
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.brand-lockup {
+  display: flex;
+  width: min(1180px, calc(100% - 48px));
+  min-height: 72px;
+  align-items: center;
+  gap: 11px;
+  margin: auto;
+  color: var(--brand-ink);
+  text-decoration: none;
+}
+
+.brand-lockup img {
+  width: 38px;
+  height: 38px;
+}
+
+.brand-lockup span {
+  display: grid;
+  gap: 2px;
+}
+
+.brand-lockup strong {
+  font-size: 22px;
+  font-weight: 750;
+  letter-spacing: -0.065em;
+  line-height: 1;
+}
+
+.brand-lockup small {
+  font-size: 8px;
+  letter-spacing: 0.22em;
+}
+
+@media (max-width: 700px) {
+  .brand-lockup {
+    width: calc(100% - 28px);
+    min-height: 62px;
+  }
+}

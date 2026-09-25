@@ -1,0 +1,111 @@
+.feedback-dialog {
+  width: min(420px, calc(100% - 32px));
+  padding: 0;
+  overflow: visible;
+  border: 1px solid #e8dfdb;
+  border-radius: 16px;
+  background: #fff;
+  color: #262321;
+  box-shadow: 0 24px 80px #21171440;
+}
+
+.feedback-dialog::backdrop {
+  background: #17131180;
+  backdrop-filter: blur(3px);
+}
+
+.feedback-content {
+  display: grid;
+  justify-items: center;
+  padding: 32px;
+  text-align: center;
+}
+
+.feedback-icon {
+  display: grid;
+  width: 52px;
+  height: 52px;
+  place-items: center;
+  margin-bottom: 16px;
+  border-radius: 50%;
+}
+
+.feedback-icon svg {
+  width: 25px;
+  height: 25px;
+}
+
+.success-icon {
+  color: #bc3854;
+  background: #fce9e8;
+}
+
+.warning-icon {
+  color: #a54a2b;
+  background: #fff0e9;
+}
+
+.feedback-content h2 {
+  margin: 0;
+  font-size: 20px;
+  letter-spacing: -0.02em;
+}
+
+.feedback-content p {
+  margin: 9px 0 0;
+  color: #706967;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.feedback-actions {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.feedback-actions button {
+  min-height: 40px;
+  padding: 0 16px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.cancel-button {
+  border-color: #e8dfdb !important;
+  background: #fff;
+  color: #514541;
+}
+
+.confirm-button {
+  background: var(--brand-gradient);
+  color: #fff;
+}
+
+.confirm-button:hover {
+  filter: brightness(0.96);
+}
+
+.danger-button {
+  background: #d64159;
+}
+
+.danger-button:hover {
+  background: #bd304b;
+}
+
+.feedback-actions button:focus-visible {
+  outline: 3px solid var(--brand-focus);
+  outline-offset: 2px;
+}
+
+@media (max-width: 480px) {
+  .feedback-content {
+    padding: 28px 22px;
+  }
+}

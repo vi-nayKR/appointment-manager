@@ -1,0 +1,21 @@
+* {
+  box-sizing: border-box;
+}
+:root {
+  --brand-ink: #141414;
+  --brand-pink: #e9435d;
+  --brand-orange: #ff9a3d;
+  --brand-gradient: linear-gradient(115deg, var(--brand-pink), var(--brand-orange));
+  --brand-focus: #f5a66d;
+  --surface: #fbf8f6;
+  --line: #eadfdb;
+}
+html,
+body {
+  min-height: 100%;
+  margin: 0;
+}
+body {
+  font-family: 'Century Gothic', 'Avenir Next', 'Segoe UI', Arial, sans-serif;
+  background: var(--surface);
+}

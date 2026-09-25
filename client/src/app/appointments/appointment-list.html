@@ -1,0 +1,263 @@
+<main class="page-shell">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">DAILY SCHEDULE</p>
+      <h1>Appointment review</h1>
+      <p class="subtitle">
+        Review the selected day's schedule and resolve conflicts before they disrupt care.
+      </p>
+    </div>
+    <div class="page-actions">
+      <a
+        class="primary-button add-button"
+        routerLink="/appointments/new"
+        queryParamsHandling="preserve"
+        >Add appointment</a
+      >
+      <div class="date-control" aria-label="Choose appointment date">
+        <button type="button" class="icon-button" aria-label="Previous day" (click)="moveDate(-1)">
+          ‹
+        </button>
+        <label class="date-label" for="review-date">Review date</label>
+        <input
+          id="review-date"
+          type="date"
+          [value]="state.date"
+          (change)="dateChanged($any($event.target).value)"
+        />
+        <button type="button" class="icon-button" aria-label="Next day" (click)="moveDate(1)">
+          ›
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <section class="summary-bar" aria-label="Schedule summary">
+    <div>
+      <span class="summary-dot"></span><strong>{{ total }}</strong> appointments
+    </div>
+    <span class="summary-date">{{ state.date }}</span>
+  </section>
+
+  <section class="filters" aria-label="Appointment filters">
+    <label class="search-field">
+      <span>Patient</span>
+      <input
+        type="search"
+        [formControl]="search"
+        placeholder="Search patient name"
+        maxlength="100"
+      />
+    </label>
+    <label>
+      <span>Provider</span>
+      <select [formControl]="provider" (change)="providerChanged($any($event.target).value)">
+        <option value="">All providers</option>
+        @for (provider of providers; track provider.id) {
+          <option [value]="provider.id">{{ provider.name }}</option>
+        }
+      </select>
+    </label>
+    <label>
+      <span>Status</span>
+      <select [value]="state.status" (change)="statusChanged($any($event.target).value)">
+        <option value="">All statuses</option>
+        @for (status of statuses; track status) {
+          <option [value]="status">{{ labelStatus(status) }}</option>
+        }
+      </select>
+    </label>
+  </section>
+
+  @if (providersError) {
+    <p class="action-error" role="alert">{{ providersError }}</p>
+  }
+
+  @if (error) {
+    <section class="state-card error-state" role="alert">
+      <span class="state-icon">!</span>
+      <h2>Schedule unavailable</h2>
+      <p>{{ error }}</p>
+      <button type="button" class="secondary-button" (click)="retry()">Try again</button>
+    </section>
+  } @else if (loading) {
+    <section class="state-card" role="status">
+      <span class="loader"></span>
+      <p>Loading appointments…</p>
+    </section>
+  } @else if (appointments.length === 0) {
+    <section class="state-card empty-state">
+      <span class="state-icon">✓</span>
+      <h2>No appointments found</h2>
+      <p>Try another date or adjust your filters.</p>
+    </section>
+  } @else {
+    @if (actionError) {
+      <p class="action-error" role="alert">{{ actionError }}</p>
+    }
+    <section class="appointment-panel" aria-label="Appointments for selected day">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Time</th>
+              <th scope="col">Patient</th>
+              <th scope="col">Provider</th>
+              <th scope="col">Chair</th>
+              <th scope="col">Status</th>
+              <th scope="col">Schedule</th>
+              <th scope="col">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (appointment of appointments; track appointment.id) {
+              <tr [class.conflict-row]="appointment.hasConflict">
+                <td class="time-cell">
+                  <strong>{{ appointment.startTime }}</strong
+                  ><span>{{ appointment.endTime }}</span>
+                </td>
+                <td>
+                  <a
+                    class="patient-link"
+                    [routerLink]="['/appointments', appointment.id]"
+                    queryParamsHandling="preserve"
+                    >{{ appointment.patientName }}</a
+                  >
+                </td>
+                <td>{{ appointment.providerName }}</td>
+                <td>
+                  <span class="chair-tag">{{ appointment.chairName }}</span>
+                </td>
+                <td>
+                  <span
+                    class="status-tag"
+                    [class.status-scheduled]="appointment.status === 'scheduled'"
+                    [class.status-checked_in]="appointment.status === 'checked_in'"
+                    [class.status-completed]="appointment.status === 'completed'"
+                    [class.status-cancelled]="appointment.status === 'cancelled'"
+                    >{{ labelStatus(appointment.status) }}</span
+                  >
+                </td>
+                <td>
+                  @if (appointment.hasConflict) {
+                    <span class="conflict-tag"><span aria-hidden="true">⚠</span> Conflict</span>
+                  } @else {
+                    <span class="clear-tag">No conflict</span>
+                  }
+                </td>
+                <td class="row-actions">
+                  <a
+                    class="text-action"
+                    [routerLink]="['/appointments', appointment.id]"
+                    queryParamsHandling="preserve"
+                    >Edit</a
+                  >
+                  <button
+                    type="button"
+                    class="text-action delete-action"
+                    [disabled]="deletingId === appointment.id"
+                    (click)="deleteAppointment(appointment)"
+                  >
+                    {{ deletingId === appointment.id ? 'Deleting…' : 'Delete' }}
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <div class="appointment-cards">
+        @for (appointment of appointments; track appointment.id) {
+          <article class="appointment-card" [class.conflict-row]="appointment.hasConflict">
+            <div class="card-heading">
+              <div>
+                <strong>{{ appointment.startTime }}–{{ appointment.endTime }}</strong
+                ><span>{{ appointment.patientName }}</span>
+              </div>
+              <span
+                class="status-tag"
+                [class.status-scheduled]="appointment.status === 'scheduled'"
+                [class.status-checked_in]="appointment.status === 'checked_in'"
+                [class.status-completed]="appointment.status === 'completed'"
+                [class.status-cancelled]="appointment.status === 'cancelled'"
+                >{{ labelStatus(appointment.status) }}</span
+              >
+            </div>
+            <dl>
+              <div>
+                <dt>Provider</dt>
+                <dd>{{ appointment.providerName }}</dd>
+              </div>
+              <div>
+                <dt>Chair</dt>
+                <dd>{{ appointment.chairName }}</dd>
+              </div>
+              <div>
+                <dt>Schedule</dt>
+                <dd>
+                  @if (appointment.hasConflict) {
+                    <span class="conflict-tag">Conflict</span>
+                  } @else {
+                    No conflict
+                  }
+                </dd>
+              </div>
+            </dl>
+            <div class="card-actions">
+              <a
+                class="secondary-button"
+                [routerLink]="['/appointments', appointment.id]"
+                queryParamsHandling="preserve"
+                >Edit</a
+              >
+              <button
+                type="button"
+                class="secondary-button delete-action"
+                [disabled]="deletingId === appointment.id"
+                (click)="deleteAppointment(appointment)"
+              >
+                {{ deletingId === appointment.id ? 'Deleting…' : 'Delete' }}
+              </button>
+            </div>
+          </article>
+        }
+      </div>
+      <footer class="pagination">
+        <span
+          >Showing {{ (state.page - 1) * limit + 1 }}–{{
+            (state.page - 1) * limit + appointments.length
+          }}
+          of {{ total }}</span
+        >
+        <div>
+          <button
+            type="button"
+            class="secondary-button"
+            [disabled]="state.page <= 1"
+            (click)="changePage(state.page - 1)"
+          >
+            Previous
+          </button>
+          <span class="page-count">Page {{ state.page }} of {{ pageCount }}</span>
+          <button
+            type="button"
+            class="secondary-button"
+            [disabled]="state.page * limit >= total"
+            (click)="changePage(state.page + 1)"
+          >
+            Next
+          </button>
+        </div>
+      </footer>
+    </section>
+  }
+</main>
+<app-feedback-modal
+  [open]="feedbackOpen"
+  [mode]="feedbackMode"
+  [title]="feedbackTitle"
+  [message]="feedbackMessage"
+  [confirmLabel]="feedbackConfirmLabel"
+  (confirmed)="confirmFeedback()"
+  (dismissed)="dismissFeedback()"
+/>

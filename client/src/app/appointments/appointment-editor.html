@@ -1,0 +1,198 @@
+<main class="editor-shell">
+  <a class="back-link" routerLink="/appointments" queryParamsHandling="preserve"
+    >← Back to appointments</a
+  >
+
+  @if (loading) {
+    <section class="editor-state" role="status">
+      <span class="loader"></span>
+      <p>Loading appointment…</p>
+    </section>
+  } @else if (loadError) {
+    <section class="editor-state error-state" role="alert">
+      <span class="state-icon">!</span>
+      <h1>{{ isNew ? 'Appointment form unavailable' : 'Appointment unavailable' }}</h1>
+      <p>{{ loadError }}</p>
+      <button class="secondary-button" type="button" (click)="back()">Return to schedule</button>
+    </section>
+  } @else {
+    <header class="editor-header">
+      <div>
+        <p class="eyebrow">
+          {{ isNew ? 'NEW APPOINTMENT' : 'APPOINTMENT DETAILS · ' + appointment?.date }}
+        </p>
+        <h1>{{ isNew ? 'Add appointment' : appointment?.patientName }}</h1>
+        <p class="subtitle">
+          {{
+            isNew
+              ? 'Enter the patient and schedule details.'
+              : 'Update the schedule details and save your changes.'
+          }}
+        </p>
+      </div>
+      @if (appointment) {
+        <span
+          class="current-status"
+          [class.status-scheduled]="appointment.status === 'scheduled'"
+          [class.status-checked_in]="appointment.status === 'checked_in'"
+          [class.status-completed]="appointment.status === 'completed'"
+          [class.status-cancelled]="appointment.status === 'cancelled'"
+          >{{ labelStatus(appointment.status) }}</span
+        >
+      }
+    </header>
+
+    @if (appointment?.conflicts?.length) {
+      <section class="conflict-panel" aria-labelledby="current-conflicts">
+        <div class="conflict-heading">
+          <span aria-hidden="true">⚠</span>
+          <div>
+            <h2 id="current-conflicts">Scheduling conflict</h2>
+            <p>
+              This appointment overlaps another booking. Change the time or chair to resolve it.
+            </p>
+          </div>
+        </div>
+        @for (conflict of appointment.conflicts; track conflict.id) {
+          <div class="conflict-item">
+            <strong>{{ conflict.patientName }}</strong
+            ><span>{{ conflict.startTime }}–{{ conflict.endTime }}</span
+            ><span>{{ conflict.chairName }}</span>
+          </div>
+        }
+      </section>
+    }
+
+    <form class="editor-card" [formGroup]="form" (ngSubmit)="save()" novalidate>
+      <div class="section-heading">
+        <h2>Appointment information</h2>
+        <p>Fields marked required must be completed.</p>
+      </div>
+      <div class="form-grid">
+        @if (isNew) {
+          <label>
+            <span>Patient name <b aria-hidden="true">*</b></span>
+            <input type="text" formControlName="patientName" maxlength="120" autocomplete="name" />
+            @if (
+              form.controls.patientName.touched && form.controls.patientName.errors?.['required']
+            ) {
+              <small class="field-error">Patient name is required.</small>
+            }
+            @if (
+              form.controls.patientName.touched && form.controls.patientName.errors?.['maxlength']
+            ) {
+              <small class="field-error">Use 120 characters or fewer.</small>
+            }
+          </label>
+          <label>
+            <span>Date <b aria-hidden="true">*</b></span>
+            <input type="date" formControlName="date" />
+            @if (form.controls.date.touched && form.controls.date.invalid) {
+              <small class="field-error">Choose a valid appointment date.</small>
+            }
+          </label>
+        }
+        <label>
+          <span>Start time <b aria-hidden="true">*</b></span>
+          <input type="time" formControlName="startTime" />
+          @if (form.controls.startTime.touched && form.controls.startTime.errors?.['required']) {
+            <small class="field-error">Start time is required.</small>
+          }
+          @if (form.controls.startTime.touched && form.controls.startTime.errors?.['pattern']) {
+            <small class="field-error">Use a valid 24-hour time.</small>
+          }
+        </label>
+        <label>
+          <span>End time <b aria-hidden="true">*</b></span>
+          <input type="time" formControlName="endTime" />
+          @if (form.controls.endTime.touched && form.controls.endTime.errors?.['required']) {
+            <small class="field-error">End time is required.</small>
+          }
+          @if (form.controls.endTime.touched && form.controls.endTime.errors?.['pattern']) {
+            <small class="field-error">Use a valid 24-hour time.</small>
+          }
+          @if (form.controls.endTime.touched && form.errors?.['timeRange']) {
+            <small class="field-error">End time must be after start time.</small>
+          }
+        </label>
+        <label>
+          <span>Chair <b aria-hidden="true">*</b></span>
+          <select formControlName="chairId">
+            @for (chair of chairs; track chair.id) {
+              <option [value]="chair.id">{{ chair.name }}</option>
+            }
+          </select>
+          @if (form.controls.chairId.touched && form.controls.chairId.errors?.['required']) {
+            <small class="field-error">Choose a chair.</small>
+          }
+        </label>
+        <label>
+          <span>Provider <b aria-hidden="true">*</b></span>
+          <select formControlName="providerId">
+            @for (provider of providers; track provider.id) {
+              <option [value]="provider.id">{{ provider.name }}</option>
+            }
+          </select>
+          @if (form.controls.providerId.touched && form.controls.providerId.errors?.['required']) {
+            <small class="field-error">Choose a provider.</small>
+          }
+        </label>
+        <label>
+          <span>Status <b aria-hidden="true">*</b></span>
+          <select formControlName="status">
+            @for (status of statuses; track status) {
+              <option [value]="status">{{ labelStatus(status) }}</option>
+            }
+          </select>
+        </label>
+        <label class="notes-field">
+          <span>Notes</span>
+          <textarea
+            formControlName="notes"
+            rows="5"
+            maxlength="2000"
+            placeholder="Add relevant appointment notes"
+          ></textarea>
+          <small class="character-count">{{ form.controls.notes.value.length }} / 2000</small>
+        </label>
+      </div>
+
+      @if (saveError) {
+        <section class="save-error" role="alert">
+          <strong>Changes not saved</strong>
+          <p>{{ saveError }}</p>
+          @for (conflict of saveConflicts; track conflict.id) {
+            <p class="conflict-detail">
+              {{ conflict.patientName }} · {{ conflict.startTime }}–{{ conflict.endTime }} ·
+              {{ conflict.chairName }}
+            </p>
+          }
+        </section>
+      }
+
+      <footer class="form-footer">
+        <button class="secondary-button" type="button" (click)="back()">Cancel</button>
+        <button class="primary-button" type="submit" [disabled]="saving">
+          {{
+            saving
+              ? isNew
+                ? 'Creating…'
+                : 'Saving…'
+              : isNew
+                ? 'Create appointment'
+                : 'Save changes'
+          }}
+        </button>
+      </footer>
+    </form>
+  }
+</main>
+<app-feedback-modal
+  [open]="feedbackOpen"
+  [mode]="feedbackMode"
+  [title]="feedbackTitle"
+  [message]="feedbackMessage"
+  [confirmLabel]="feedbackConfirmLabel"
+  (confirmed)="finishSave()"
+  (dismissed)="finishSave()"
+/>
