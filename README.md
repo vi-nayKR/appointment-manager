@@ -1,5 +1,7 @@
 # Appointment Review
 
+[![Checks](https://github.com/vi-nayKR/appointment-manager/actions/workflows/checks.yml/badge.svg)](https://github.com/vi-nayKR/appointment-manager/actions/workflows/checks.yml)
+
 A small clinic appointment manager built with Angular and TypeScript, Node.js and Express, and MongoDB. It supports date-based appointment review, search and filters, conflict visibility, and creating, editing, and deleting appointments.
 
 ## Screenshots
